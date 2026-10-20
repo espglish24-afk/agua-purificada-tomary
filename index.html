@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087fba">
+  <title>Pedidos | Agua Purificada Tomary</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#15364d;background:#eaf7fc}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#eaf7fc}
+    .hero{min-height:330px;background:linear-gradient(180deg,rgba(3,49,103,.05),rgba(3,49,103,.38)),url("portada-tomary.png") center 26%/cover no-repeat;display:flex;align-items:flex-end;justify-content:center;padding:22px 16px}
+    .hero-tag{background:#064b8dcc;color:white;border:1px solid #ffffff70;border-radius:999px;padding:10px 18px;font-weight:800;letter-spacing:.3px;text-align:center;box-shadow:0 5px 20px #00365a40}
+    main{width:min(560px,calc(100% - 24px));margin:-8px auto 28px;position:relative;background:#fff;border-radius:20px;box-shadow:0 12px 35px #14516b20;overflow:hidden}
+    header{background:linear-gradient(120deg,#087fba,#00a7c8);color:#fff;text-align:center;padding:20px 20px}
+    h1{font-size:24px;margin:0 0 5px}header p{margin:0}
+    form{padding:20px}
+    label,.field-title{display:block;font-weight:750;font-size:14px;margin:15px 0 7px}
+    input[type=text],input[type=tel],textarea{width:100%;border:1px solid #c9dce6;border-radius:11px;padding:13px;font:inherit;color:#163247;background:#fbfdff}
+    textarea{min-height:82px;resize:vertical}
+    .hint{font-size:12px;color:#597384;line-height:1.45;margin-top:6px}
+    .location-row{display:flex;gap:8px;align-items:center}
+    button{border:0;border-radius:11px;background:#087fba;color:white;font:inherit;font-weight:750;padding:13px;cursor:pointer}
+    button:disabled{opacity:.6;cursor:wait}
+    .location-row button{flex:0 0 125px;font-size:13px;padding:11px}
+    .qty-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+    .qty{position:relative;margin:0}
+    .qty input{position:absolute;opacity:0;pointer-events:none}
+    .qty span{display:flex;align-items:center;justify-content:center;border:1px solid #c9dce6;border-radius:10px;min-height:44px;font-weight:800;background:#fbfdff}
+    .qty input:checked+span{background:#087fba;color:white;border-color:#087fba}
+    .summary{background:#f0f9fd;border:1px solid #d7edf6;border-radius:12px;padding:13px;margin-top:15px;font-size:14px;font-weight:700}
+    .confirm{display:flex;gap:9px;align-items:flex-start;font-weight:500;line-height:1.45;margin-top:18px}
+    .confirm input{margin-top:4px}
+    .submit{width:100%;margin-top:18px;background:#07834b;font-size:16px}
+    .status{padding:0 20px 18px;font-size:14px;white-space:pre-wrap}
+    footer{text-align:center;color:#67808f;font-size:12px;padding:0 20px 20px}
+    @media(min-width:700px){.hero{min-height:440px;background-position:center 30%}main{margin-top:-18px}}
+    @media(max-width:370px){.location-row{display:block}.location-row button{width:100%;margin-bottom:5px}.qty-grid{gap:5px}}
+  </style>
+</head>
+<body>
+  <section class="hero" aria-label="Portada de Agua Purificada Tomary">
+    <div class="hero-tag">GARRAFONES DE AGUA · AGUA PARA LLEVAR</div>
+  </section>
+
+  <main>
+    <header>
+      <h1>Haz tu pedido</h1>
+      <p>Agua Purificada Tomary · Fácil y rápido</p>
+    </header>
+    <form id="orderForm">
+      <label for="nombre">Nombre</label>
+      <input id="nombre" name="nombre" type="text" autocomplete="name" maxlength="100" placeholder="¿A nombre de quién?" required>
+
+      <label for="celular">Número de celular</label>
+      <input id="celular" name="celular" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="Tu número de contacto" required>
+
+      <label for="ubicacion">Ubicación real de entrega</label>
+      <textarea id="ubicacion" name="ubicacion" placeholder="Calle, número, colonia y referencias para llegar" required></textarea>
+      <div class="location-row">
+        <button type="button" id="geoBtn">Usar mi GPS</button>
+        <div class="hint">Permite el acceso a ubicación cuando el navegador lo solicite, o escribe tu dirección completa.</div>
+      </div>
+      <input type="hidden" id="latitud" name="latitud">
+      <input type="hidden" id="longitud" name="longitud">
+
+      <div class="field-title">¿Cuántos garrafones necesitas?</div>
+      <div class="qty-grid" id="qtyGrid"></div>
+      <div class="summary" id="summary">Pedido: 1 garrafón.</div>
+
+      <label class="confirm"><input type="checkbox" id="confirmo" required><span>Confirmo que mi nombre, celular, ubicación y cantidad son correctos.</span></label>
+      <button class="submit" type="submit" id="submitBtn">Confirmar pedido por WhatsApp</button>
+      <p class="hint">Al confirmar se abrirá WhatsApp con el pedido preparado. Debes pulsar “Enviar” en WhatsApp para completar el envío.</p>
+    </form>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+    <footer>Agua Purificada Tomary · Gracias por tu preferencia</footer>
+  </main>
+
+<script>
+const WHATSAPP_NUMBER = "523319053634";
+// Después de configurar Google Apps Script, pega aquí la URL de implementación /exec.
+// Si se deja vacío, WhatsApp funciona pero no se registra el pedido en Google Sheets.
+const GOOGLE_SCRIPT_URL = "";
+
+const qtyGrid = document.getElementById("qtyGrid");
+const summary = document.getElementById("summary");
+for (let n=1; n<=15; n++) {
+  const label = document.createElement("label");
+  label.className = "qty";
+  label.innerHTML = `<input type="radio" name="garrafones" value="${n}" ${n===1?"checked":""} required><span>${n}</span>`;
+  qtyGrid.appendChild(label);
+}
+function qtySelected(){return Number(document.querySelector('input[name="garrafones"]:checked')?.value || 1);}
+function updateSummary(){
+  const n=qtySelected();
+  summary.textContent=`Pedido: ${n} garrafón${n===1?"":"es"}.`;
+}
+qtyGrid.addEventListener("change",updateSummary);
+updateSummary();
+
+document.getElementById("geoBtn").addEventListener("click",()=>{
+  const btn=document.getElementById("geoBtn");
+  const status=document.getElementById("status");
+  if(!navigator.geolocation){status.textContent="Este navegador no permite obtener GPS. Escribe tu dirección.";return;}
+  btn.disabled=true;btn.textContent="Obteniendo GPS…";
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude, lon=pos.coords.longitude;
+    document.getElementById("latitud").value=lat;
+    document.getElementById("longitud").value=lon;
+    const field=document.getElementById("ubicacion");
+    const map=`https://maps.google.com/?q=${lat},${lon}`;
+    field.value=(field.value.trim()?field.value.trim()+"\n":"")+"Ubicación GPS: "+map;
+    status.textContent="GPS añadido. Si puedes, conserva también calle, número y colonia para facilitar la entrega.";
+    btn.disabled=false;btn.textContent="Actualizar GPS";
+  },()=>{
+    status.textContent="No se pudo obtener el GPS. Permite la ubicación o escribe la dirección completa.";
+    btn.disabled=false;btn.textContent="Intentar GPS";
+  },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
+});
+
+document.getElementById("orderForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const pedido={
+    nombre:document.getElementById("nombre").value.trim(),
+    celular:document.getElementById("celular").value.trim(),
+    ubicacion:document.getElementById("ubicacion").value.trim(),
+    garrafones:qtySelected(),
+    latitud:document.getElementById("latitud").value,
+    longitud:document.getElementById("longitud").value,
+    fecha:new Date().toISOString()
+  };
+  if(!pedido.nombre||!pedido.celular||!pedido.ubicacion||!document.getElementById("confirmo").checked)return;
+
+  const mensaje=[
+    "💧 *PEDIDO — AGUA PURIFICADA TOMARY*",
+    `*Nombre:* ${pedido.nombre}`,
+    `*Celular:* ${pedido.celular}`,
+    `*Garrafones:* ${pedido.garrafones}`,
+    `*Ubicación de entrega:* ${pedido.ubicacion}`,
+    pedido.latitud&&pedido.longitud?`*Mapa GPS:* https://maps.google.com/?q=${pedido.latitud},${pedido.longitud}`:"",
+    "*Confirmación:* Cliente confirmó los datos."
+  ].filter(Boolean).join("\n");
+
+  const status=document.getElementById("status");
+  status.textContent="Abriendo WhatsApp…";
+  if(GOOGLE_SCRIPT_URL){
+    try{
+      await fetch(GOOGLE_SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(pedido)});
+    }catch(err){
+      status.textContent="No se pudo contactar el registro de Google Sheets. Se abrirá WhatsApp de todas formas.";
+    }
+  }
+  window.location.href=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
+});
+</script>
+</body>
+        </html>
