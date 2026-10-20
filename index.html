@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -248,15 +247,11 @@
   </div>
 
   <script>
-    // HOJA OFICIAL DE GOOGLE SHEETS
-    const SPREADSHEET_URL =
-      "https://docs.google.com/spreadsheets/d/18ePlonZjyFzBr3Rd8-O9JMLZ3gsZDPTNlo2nH7WkkHg/edit?usp=drivesdk";
-
-    // ÚLTIMA URL DE GOOGLE APPS SCRIPT COMPARTIDA
+    // URL Web App de Google Apps Script
     const GOOGLE_SCRIPT_URL =
       "https://script.google.com/macros/s/AKfycbxsQSFxJaY2aKxoaM907PjcA1toLY5twuEavitKUq8GhZD7P1zRQGrkV5tSUX7dpwm2Zw/exec";
 
-    // Número de WhatsApp de Tomary
+    // Número de WhatsApp de Tomary (con código de país sin '+')
     const WHATSAPP_NUMBER = "523319053634";
 
     const form = document.getElementById("orderForm");
@@ -266,8 +261,7 @@
 
     gpsBtn.addEventListener("click", function () {
       if (!navigator.geolocation) {
-        estado.textContent =
-          "Tu navegador no permite obtener la ubicación GPS.";
+        estado.textContent = "Tu navegador no permite obtener la ubicación GPS.";
         return;
       }
 
@@ -276,21 +270,16 @@
 
       navigator.geolocation.getCurrentPosition(
         function (position) {
-          document.getElementById("latitud").value =
-            position.coords.latitude;
-
-          document.getElementById("longitud").value =
-            position.coords.longitude;
+          document.getElementById("latitud").value = position.coords.latitude;
+          document.getElementById("longitud").value = position.coords.longitude;
 
           gpsBtn.textContent = "Ubicación GPS agregada";
-          estado.textContent =
-            "Ubicación agregada. Ahora puedes enviar tu pedido.";
+          estado.textContent = "Ubicación agregada. Ahora puedes enviar tu pedido.";
           gpsBtn.disabled = false;
         },
         function () {
           gpsBtn.textContent = "Compartir mi ubicación GPS";
-          estado.textContent =
-            "No se pudo obtener la ubicación. Puedes continuar escribiendo tu dirección.";
+          estado.textContent = "No se pudo obtener la ubicación. Puedes continuar escribiendo tu dirección.";
           gpsBtn.disabled = false;
         },
         {
@@ -312,13 +301,11 @@
         nombre: document.getElementById("nombre").value.trim(),
         celular: document.getElementById("celular").value.trim(),
         ubicacion: document.getElementById("ubicacion").value.trim(),
-        garrafones: Number(
-          document.getElementById("garrafones").value
-        ),
+        garrafones: Number(document.getElementById("garrafones").value),
         referencias: document.getElementById("referencias").value.trim(),
         latitud: document.getElementById("latitud").value,
         longitud: document.getElementById("longitud").value,
-        fecha: new Date().toISOString()
+        fecha: new Date().toLocaleString("es-MX", { timeZone: "America/Mexico_City" })
       };
 
       if (
@@ -341,26 +328,18 @@
         "Garrafones: " + pedido.garrafones,
         "Referencias: " + (pedido.referencias || "Ninguna"),
         pedido.latitud && pedido.longitud
-          ? "Ubicación GPS: https://maps.google.com/?q=" +
-            pedido.latitud + "," + pedido.longitud
+          ? "Ubicación GPS: https://maps.google.com/?q=" + pedido.latitud + "," + pedido.longitud
           : "Ubicación GPS: No compartida"
       ].join("\n");
 
       const whatsappURL =
-        "https://wa.me/" + WHATSAPP_NUMBER +
-        "?text=" + encodeURIComponent(mensaje);
+        "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(mensaje);
 
       submitBtn.disabled = true;
-      submitBtn.textContent = "Preparando pedido...";
-      estado.textContent = "Preparando el envío a WhatsApp...";
+      submitBtn.textContent = "Registrando pedido...";
+      estado.textContent = "Enviando registro y preparando WhatsApp...";
 
       try {
-        /*
-          Apps Script recibe el pedido mediante POST.
-          no-cors impide leer la respuesta del servidor.
-          Por eso no se puede confirmar desde esta página
-          que Google Sheets haya guardado el pedido.
-        */
         await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
@@ -370,24 +349,4 @@
           body: JSON.stringify(pedido)
         });
 
-        estado.textContent =
-          "Se intentó enviar el pedido al registro. " +
-          "No se ha confirmado el guardado en Google Sheets. " +
-          "Continúa en WhatsApp para enviar tu solicitud.";
-
-      } catch (error) {
-        estado.textContent =
-          "No se pudo completar el intento de registro. " +
-          "Puedes continuar a WhatsApp para enviar tu solicitud.";
-      }
-
-      // Abrir WhatsApp aunque el registro no pueda confirmarse.
-      window.location.href = whatsappURL;
-
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar pedido por WhatsApp";
-    });
-  </script>
-</body>
-          </html>
-          
+        estado
