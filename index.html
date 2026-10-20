@@ -16,9 +16,7 @@
       --verde: #16834a;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -45,9 +43,7 @@
       background: linear-gradient(135deg, var(--azul), var(--azul-oscuro));
     }
 
-    .gota {
-      font-size: 48px;
-    }
+    .gota { font-size: 48px; }
 
     header h1 {
       margin: 10px 0 8px;
@@ -55,14 +51,9 @@
       letter-spacing: 1px;
     }
 
-    header p {
-      margin: 0;
-      line-height: 1.5;
-    }
+    header p { margin: 0; line-height: 1.5; }
 
-    main {
-      padding: 24px 20px;
-    }
+    main { padding: 24px 20px; }
 
     h2 {
       margin-top: 0;
@@ -94,10 +85,7 @@
       border-color: var(--azul);
     }
 
-    textarea {
-      min-height: 85px;
-      resize: vertical;
-    }
+    textarea { min-height: 85px; resize: vertical; }
 
     .gps {
       width: 100%;
@@ -132,16 +120,15 @@
       cursor: pointer;
     }
 
-    .enviar:disabled {
-      opacity: .65;
-      cursor: wait;
-    }
+    .enviar:disabled { opacity: .65; cursor: wait; }
 
     #estado {
       margin-top: 14px;
       font-size: 14px;
       line-height: 1.5;
       overflow-wrap: anywhere;
+      font-weight: bold;
+      color: var(--azul-oscuro);
     }
 
     footer {
@@ -168,34 +155,13 @@
 
       <form id="orderForm">
         <label for="nombre">Nombre completo *</label>
-        <input
-          id="nombre"
-          name="nombre"
-          type="text"
-          autocomplete="name"
-          maxlength="100"
-          required
-        >
+        <input id="nombre" name="nombre" type="text" autocomplete="name" maxlength="100" required>
 
         <label for="celular">Número de celular *</label>
-        <input
-          id="celular"
-          name="celular"
-          type="tel"
-          inputmode="tel"
-          autocomplete="tel"
-          maxlength="20"
-          required
-        >
+        <input id="celular" name="celular" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" required>
 
         <label for="ubicacion">Dirección de entrega *</label>
-        <textarea
-          id="ubicacion"
-          name="ubicacion"
-          maxlength="500"
-          placeholder="Calle, número, colonia y referencias"
-          required
-        ></textarea>
+        <textarea id="ubicacion" name="ubicacion" maxlength="500" placeholder="Calle, número, colonia y referencias" required></textarea>
 
         <label for="garrafones">Cantidad de garrafones *</label>
         <select id="garrafones" name="garrafones" required>
@@ -214,28 +180,19 @@
         </select>
 
         <label for="referencias">Referencias adicionales (opcional)</label>
-        <textarea
-          id="referencias"
-          name="referencias"
-          maxlength="300"
-          placeholder="Color de la casa, entre calles, etc."
-        ></textarea>
+        <textarea id="referencias" name="referencias" maxlength="300" placeholder="Color de la casa, entre calles, etc."></textarea>
 
         <input type="hidden" id="latitud" name="latitud">
         <input type="hidden" id="longitud" name="longitud">
 
-        <button class="gps" id="gpsBtn" type="button">
-          Compartir mi ubicación GPS
-        </button>
+        <button class="gps" id="gpsBtn" type="button">Compartir mi ubicación GPS</button>
 
         <p class="nota">
           La ubicación GPS es opcional. Si la compartes, ayudará a identificar
           el lugar de entrega. También debes escribir tu dirección.
         </p>
 
-        <button class="enviar" id="submitBtn" type="submit">
-          Enviar pedido por WhatsApp
-        </button>
+        <button class="enviar" id="submitBtn" type="submit">Enviar pedido por WhatsApp</button>
 
         <p id="estado" role="status" aria-live="polite"></p>
       </form>
@@ -247,11 +204,9 @@
   </div>
 
   <script>
-    // URL Web App de Google Apps Script actualizada
-    const GOOGLE_SCRIPT_URL =
-      "https://script.google.com/macros/s/AKfycbz69q8ACUipyEZB_MGnQSazMS4lQzAqTxqAP8C4aTcB9OSmPFw4DBXLwoXdel1BqUMZNA/exec";
+    // URL de Apps Script vinculada a tu Google Sheets
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxlDOHKvS-GlwDmRXbuf1jS37dqahBNL3Tv_v1hCBBO9S9C9lH19hoqDibDKPhdddPHBA/exec";
 
-    // Número de WhatsApp de Tomary
     const WHATSAPP_NUMBER = "523319053634";
 
     const form = document.getElementById("orderForm");
@@ -272,30 +227,23 @@
         function (position) {
           document.getElementById("latitud").value = position.coords.latitude;
           document.getElementById("longitud").value = position.coords.longitude;
-
           gpsBtn.textContent = "Ubicación GPS agregada";
           estado.textContent = "Ubicación agregada. Ahora puedes enviar tu pedido.";
           gpsBtn.disabled = false;
         },
         function () {
           gpsBtn.textContent = "Compartir mi ubicación GPS";
-          estado.textContent = "No se pudo obtener la ubicación. Puedes continuar escribiendo tu dirección.";
+          estado.textContent = "No se pudo obtener la ubicación.";
           gpsBtn.disabled = false;
         },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0
-        }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     });
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
 
-      if (!form.reportValidity()) {
-        return;
-      }
+      if (!form.reportValidity()) return;
 
       const pedido = {
         nombre: document.getElementById("nombre").value.trim(),
@@ -307,17 +255,6 @@
         longitud: document.getElementById("longitud").value,
         fecha: new Date().toLocaleString("es-MX", { timeZone: "America/Mexico_City" })
       };
-
-      if (
-        !pedido.nombre ||
-        !pedido.celular ||
-        !pedido.ubicacion ||
-        !Number.isInteger(pedido.garrafones) ||
-        pedido.garrafones < 1
-      ) {
-        estado.textContent = "Revisa los datos del pedido.";
-        return;
-      }
 
       const mensaje = [
         "¡Hola! Quiero hacer un pedido de Agua Purificada Tomary.",
@@ -332,34 +269,31 @@
           : "Ubicación GPS: No compartida"
       ].join("\n");
 
-      const whatsappURL =
-        "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(mensaje);
+      const whatsappURL = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(mensaje);
 
       submitBtn.disabled = true;
-      submitBtn.textContent = "Registrando pedido...";
-      estado.textContent = "Enviando registro y preparando WhatsApp...";
+      submitBtn.textContent = "Guardando pedido...";
+      estado.textContent = "⏳ Guardando en Google Sheets...";
 
       try {
         await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(pedido)
         });
-
-        estado.textContent = "¡Pedido registrado! Redirigiendo a WhatsApp...";
       } catch (error) {
-        estado.textContent = "Redirigiendo a WhatsApp...";
+        console.error("Error al enviar a Apps Script:", error);
       }
 
-      // Margen de espera para asegurar la salida de la petición HTTP
+      estado.textContent = "✅ ¡Registrado! Abriendo WhatsApp...";
+
       setTimeout(() => {
         window.location.href = whatsappURL;
         submitBtn.disabled = false;
         submitBtn.textContent = "Enviar pedido por WhatsApp";
-      }, 600);
+        estado.textContent = "";
+      }, 1500);
     });
   </script>
 </body>
