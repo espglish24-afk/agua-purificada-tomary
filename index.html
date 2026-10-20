@@ -247,11 +247,11 @@
   </div>
 
   <script>
-    // URL Web App de Google Apps Script
+    // URL Web App de Google Apps Script actualizada
     const GOOGLE_SCRIPT_URL =
-      "https://script.google.com/macros/s/AKfycbxsQSFxJaY2aKxoaM907PjcA1toLY5twuEavitKUq8GhZD7P1zRQGrkV5tSUX7dpwm2Zw/exec";
+      "https://script.google.com/macros/s/AKfycbz69q8ACUipyEZB_MGnQSazMS4lQzAqTxqAP8C4aTcB9OSmPFw4DBXLwoXdel1BqUMZNA/exec";
 
-    // Número de WhatsApp de Tomary (con código de país sin '+')
+    // Número de WhatsApp de Tomary
     const WHATSAPP_NUMBER = "523319053634";
 
     const form = document.getElementById("orderForm");
@@ -349,4 +349,18 @@
           body: JSON.stringify(pedido)
         });
 
-        estado
+        estado.textContent = "¡Pedido registrado! Redirigiendo a WhatsApp...";
+      } catch (error) {
+        estado.textContent = "Redirigiendo a WhatsApp...";
+      }
+
+      // Margen de espera para asegurar la salida de la petición HTTP
+      setTimeout(() => {
+        window.location.href = whatsappURL;
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Enviar pedido por WhatsApp";
+      }, 600);
+    });
+  </script>
+</body>
+  </html>
